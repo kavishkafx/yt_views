@@ -3,6 +3,7 @@ name: Update YouTube Video Title with View Count
 on:
   schedule:
     - cron: '*/7 * * * *'  # Runs every 7 minutes
+  workflow_dispatch: 
 
 jobs:
   update-title:
