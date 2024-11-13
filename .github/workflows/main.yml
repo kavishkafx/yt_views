@@ -1,0 +1,38 @@
+name: Update YouTube Video Title with View Count
+
+on:
+  schedule:
+    - cron: '*/7 * * * *'  # Runs every 10 minutes
+
+jobs:
+  update-title:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the code from the repository
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Step 2: Set up Python
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12  # You can use the version you prefer
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+    # Step 4: Set up environment variables
+    - name: Set environment variables
+      run: |
+        echo "YT_CLIENT_ID=${{ secrets.YT_CLIENT_ID }}" >> $GITHUB_ENV
+        echo "YT_CLIENT_SECRET=${{ secrets.YT_CLIENT_SECRET }}" >> $GITHUB_ENV
+        echo "YT_REFRESH_TOKEN=${{ secrets.YT_REFRESH_TOKEN }}" >> $GITHUB_ENV
+        echo "YT_VIDEO_ID=${{ secrets.YT_VIDEO_ID }}" >> $GITHUB_ENV
+
+    # Step 5: Run Python script to update YouTube title
+    - name: Run Python script to update YouTube title
+      run: python update_yt_title.py
