@@ -1,5 +1,4 @@
 import os
-import re
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
@@ -50,20 +49,6 @@ def get_video_details(youtube, video_id):
         print(f"Error retrieving video details: {e}")
         return None, None
 
-def get_valid_categories(youtube):
-    # Retrieve valid video categories
-    try:
-        request = youtube.videoCategories().list(part="snippet", regionCode="US")
-        response = request.execute()
-
-        categories = {}
-        for item in response["items"]:
-            categories[item["id"]] = item["snippet"]["title"]
-        return categories
-    except Exception as e:
-        print(f"Error retrieving categories: {e}")
-        return {}
-
 def update_video_title():
     # Authenticate and get the YouTube service
     youtube = get_authenticated_service()
@@ -82,19 +67,11 @@ def update_video_title():
     view_count = f"{int(view_count):,}"
 
     # Get the current video title and categoryId
-    _, category_id = get_video_details(youtube, video_id)
+    current_title, category_id = get_video_details(youtube, video_id)
 
     if category_id is None:
         print("Failed to retrieve video details.")
         return
-
-    # Get the list of valid categories
-    valid_categories = get_valid_categories(youtube)
-
-    # Check if the retrieved category_id is valid
-    if category_id not in valid_categories:
-        print(f"Warning: Invalid categoryId '{category_id}' retrieved. Falling back to default category.")
-        category_id = "22"  # Default category ID (People & Blogs)
 
     # Construct the new title based on the specified format
     new_title = f"Real-Time? Not Quite... Views: {view_count} (Updated Every 10 Minutes to Spare the API!)"
@@ -107,14 +84,15 @@ def update_video_title():
         print("Error: The new title is empty or invalid.")
         return
 
-    # Update the video title along with the categoryId
+    # Update the video title, leaving categoryId and description unchanged
     update_request = youtube.videos().update(
         part="snippet",
         body={
             "id": video_id,
             "snippet": {
                 "title": new_title,
-                "categoryId": category_id,
+                "categoryId": category_id,  # Retain the original categoryId
+                # Do not include "description" to leave it unchanged
             },
         },
     )
