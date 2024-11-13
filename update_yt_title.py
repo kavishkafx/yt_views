@@ -39,15 +39,16 @@ def get_video_details(youtube, video_id):
 
         if not response["items"]:
             print("No video found.")
-            return None, None
+            return None, None, None
 
         video = response["items"][0]
         title = video["snippet"]["title"]
         category_id = video["snippet"]["categoryId"]
-        return title, category_id
+        description = video["snippet"]["description"]
+        return title, category_id, description
     except Exception as e:
         print(f"Error retrieving video details: {e}")
-        return None, None
+        return None, None, None
 
 def update_video_title():
     # Authenticate and get the YouTube service
@@ -66,10 +67,10 @@ def update_video_title():
     # Format the view count with commas
     view_count = f"{int(view_count):,}"
 
-    # Get the current video title and categoryId
-    current_title, category_id = get_video_details(youtube, video_id)
+    # Get the current video title, categoryId, and description
+    current_title, category_id, description = get_video_details(youtube, video_id)
 
-    if category_id is None:
+    if category_id is None or description is None:
         print("Failed to retrieve video details.")
         return
 
@@ -84,15 +85,15 @@ def update_video_title():
         print("Error: The new title is empty or invalid.")
         return
 
-    # Update the video title, leaving categoryId and description unchanged
+    # Update the video title, keeping categoryId and description unchanged
     update_request = youtube.videos().update(
         part="snippet",
         body={
             "id": video_id,
             "snippet": {
                 "title": new_title,
-                "categoryId": category_id,  # Retain the original categoryId
-                # Do not include "description" to leave it unchanged
+                "categoryId": category_id,
+                "description": description,  # Include the original description to prevent it from being removed
             },
         },
     )
