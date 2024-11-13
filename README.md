@@ -1,4 +1,4 @@
-# YouTube Title Auto-Updater
+# YouTube View Count in Title
 
 A recreation of Tom Scott's real-time view counter implementation. Due to YouTube's API quota limitations (and me not wanting to pay Google for additional quota xd), this version updates every 7 minutes. So the view counts might be running a few minutes behind real-time, but hey, it's still pretty cool!
 
