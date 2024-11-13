@@ -1,7 +1,7 @@
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 import os
 import re
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 def get_authenticated_service():
     # Authenticate using the OAuth credentials and refresh token
@@ -17,40 +17,52 @@ def get_authenticated_service():
 
 def get_view_count(youtube, video_id):
     # Get the video statistics
-    request = youtube.videos().list(part="statistics", id=video_id)
-    response = request.execute()
+    try:
+        request = youtube.videos().list(part="statistics", id=video_id)
+        response = request.execute()
 
-    if not response["items"]:
-        print("No video found.")
+        if not response["items"]:
+            print("No video found.")
+            return None
+
+        video = response["items"][0]
+        view_count = video["statistics"]["viewCount"]
+        return view_count
+    except Exception as e:
+        print(f"Error retrieving view count: {e}")
         return None
-
-    video = response["items"][0]
-    view_count = video["statistics"]["viewCount"]
-    return view_count
 
 def get_video_details(youtube, video_id):
     # Get the video details (including title and categoryId)
-    request = youtube.videos().list(part="snippet", id=video_id)
-    response = request.execute()
+    try:
+        request = youtube.videos().list(part="snippet", id=video_id)
+        response = request.execute()
 
-    if not response["items"]:
-        print("No video found.")
+        if not response["items"]:
+            print("No video found.")
+            return None, None
+
+        video = response["items"][0]
+        title = video["snippet"]["title"]
+        category_id = video["snippet"]["categoryId"]
+        return title, category_id
+    except Exception as e:
+        print(f"Error retrieving video details: {e}")
         return None, None
-
-    video = response["items"][0]
-    title = video["snippet"]["title"]
-    category_id = video["snippet"]["categoryId"]
-    return title, category_id
 
 def get_valid_categories(youtube):
     # Retrieve valid video categories
-    request = youtube.videoCategories().list(part="snippet", regionCode="US")
-    response = request.execute()
+    try:
+        request = youtube.videoCategories().list(part="snippet", regionCode="US")
+        response = request.execute()
 
-    categories = {}
-    for item in response["items"]:
-        categories[item["id"]] = item["snippet"]["title"]
-    return categories
+        categories = {}
+        for item in response["items"]:
+            categories[item["id"]] = item["snippet"]["title"]
+        return categories
+    except Exception as e:
+        print(f"Error retrieving categories: {e}")
+        return {}
 
 def update_video_title():
     # Authenticate and get the YouTube service
@@ -66,10 +78,13 @@ def update_video_title():
         print("Failed to retrieve view count.")
         return
 
-    # Get the current video title and categoryId
-    current_title, category_id = get_video_details(youtube, video_id)
+    # Format the view count with commas
+    view_count = f"{int(view_count):,}"
 
-    if current_title is None or category_id is None:
+    # Get the current video title and categoryId
+    _, category_id = get_video_details(youtube, video_id)
+
+    if category_id is None:
         print("Failed to retrieve video details.")
         return
 
@@ -78,23 +93,11 @@ def update_video_title():
 
     # Check if the retrieved category_id is valid
     if category_id not in valid_categories:
-        print(f"Invalid categoryId: {category_id}. Using a default category.")
+        print(f"Warning: Invalid categoryId '{category_id}' retrieved. Falling back to default category.")
         category_id = "22"  # Default category ID (People & Blogs)
 
-    # Debug: Print current title and view count
-    print(f"Current Title: {current_title}")
-    print(f"View Count: {view_count}")
-
-    # Check if the title already contains a 'View Count' placeholder (or any existing count)
-    if "View Count:" in current_title:
-        # Replace the view count in the title (use regex to find it)
-        new_title = re.sub(r'View Count: \d+', f'View Count: {view_count}', current_title)
-    else:
-        # Append the view count to the title if no placeholder exists
-        new_title = f"{current_title} | View Count: {view_count}"
-
-    # Debug: Print the new title after replacement
-    print(f"New Title (after replacement): {new_title}")
+    # Construct the new title based on the specified format
+    new_title = f"Real-Time? Not Quite... Views: {view_count} (Updated Every 10 Minutes to Spare the API!)"
 
     # Ensure the title is within YouTube's title length limit (100 characters)
     new_title = new_title[:100]
@@ -111,7 +114,7 @@ def update_video_title():
             "id": video_id,
             "snippet": {
                 "title": new_title,
-                "categoryId": category_id,  # Add the valid categoryId here
+                "categoryId": category_id,
             },
         },
     )
@@ -119,8 +122,12 @@ def update_video_title():
     # Debug: Print before executing the update request
     print(f"Updating video with Title: {new_title}")
 
-    update_request.execute()
-    print(f"Updated title to: {new_title}")
+    # Try executing the update request
+    try:
+        update_request.execute()
+        print(f"Updated title to: {new_title}")
+    except Exception as e:
+        print(f"Failed to update title: {e}")
 
 if __name__ == "__main__":
     update_video_title()
