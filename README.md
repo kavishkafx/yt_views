@@ -1,6 +1,9 @@
 # YouTube Title Auto-Updater
 
-Automatically update your YouTube video title with real-time view counts, similar to Tom Scott's implementation.
+A recreation of Tom Scott's real-time view counter implementation. Due to YouTube's API quota limitations (and me not wanting to pay Google for additional quota xd), this version updates every 7 minutes. So the view counts might be running a few minutes behind real-time, but hey, it's still pretty cool!
+
+## Video Tutorial
+For a detailed walkthrough of setting up a similar system locally, check out [this helpful tutorial](https://www.youtube.com/watch?v=QuUKE4cw4Y8).
 
 ## Setup Instructions
 
@@ -37,14 +40,14 @@ You'll need to generate a `refresh_token` using your OAuth credentials. This is 
 ## How It Works
 
 The system uses a GitHub Action (`.github/workflows/update_youtube_title.yml`) that:
-- Runs automatically every 15 minutes
+- Runs automatically every 7 minutes
 - Fetches the current view count for your specified video
 - Updates the video title with the latest view count
 - Provides viewers with an approximately real-time view counter
 
 ## Technical Details
 
-- **Update Frequency**: Every 15 minutes (configured to respect YouTube API's daily quota limit of 10,000 units - each title update consumes 50 units, allowing for ~200 updates per day)
+- **Update Frequency**: Every 7 minutes (configured to respect YouTube API's daily quota limit of 10,000 units - each title update consumes 50 units. While this aggressive update frequency will consume more API quota, it provides more frequent updates for better accuracy)
 - **API Used**: YouTube Data API v3
 - **Automation**: GitHub Actions
 - **Runtime**: Serverless (no local execution needed after setup)
@@ -52,9 +55,10 @@ The system uses a GitHub Action (`.github/workflows/update_youtube_title.yml`) t
 ## Important Notes
 
 - ⚠️ The system runs entirely through GitHub Actions - no local server needed
-- 📊 15-minute update interval helps maintain YouTube API quota limits
+- 📊 7-minute update interval provides more frequent updates but consumes more API quota
 - 🔒 All sensitive credentials are stored securely in GitHub Secrets
 - 📝 Remember to keep your API credentials private and never commit them to the repository
+- ⏰ View counts may be slightly delayed due to the update interval and API limitations
 
 ## Troubleshooting
 
