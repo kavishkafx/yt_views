@@ -2,6 +2,8 @@
 
 A recreation of Tom Scott's real-time view counter implementation. Due to YouTube's API quota limitations (and me not wanting to pay Google for additional quota xd), this version updates every 7 minutes. So the view counts might be running a few minutes behind real-time, but hey, it's still pretty cool!
 
+YT Video - [Not a tutorial](https://youtu.be/DtEkDlkuDqQ?si=xEDZXjctvNIp5YZj)
+
 ## Video Tutorial
 For a detailed walkthrough of setting up a similar system locally, check out [this helpful tutorial](https://www.youtube.com/watch?v=QuUKE4cw4Y8).
 
